@@ -14,9 +14,9 @@ def main():
     algo.n_cross = 4
     algo.n_mute = 2
     algo.n_proc = 4
-    algo.multimodal = False
+    algo.multimodal = True
     algo.display = True
-    algo.save = True
+    algo.save = False
 
     # run the algorithm
     algo.run()

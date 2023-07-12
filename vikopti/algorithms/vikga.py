@@ -1,9 +1,8 @@
 import numpy as np
-from sklearn.neighbors import KDTree
-from sklearn.cluster import DBSCAN
 from pysampling.sample import sample
 from vikopti.core.problem import Problem
 from vikopti.core.algorithm import Algorithm
+from vikopti.core.utils import compute_penalty, compute_fitness, get_optima, sbx
 
 
 class VIKGA(Algorithm):
@@ -57,20 +56,19 @@ class VIKGA(Algorithm):
         self.init_method = "lhs"
         self.mute_method = "random"
         self.multimodal = False
-        self.optima_method = "closest"
 
         # initialize population's design variables, objective, constraints, penalty and fitness
         self.x = np.zeros((self.n_max, self.problem.n_var))
         self.obj = np.zeros((self.n_max, self.problem.n_obj))
         self.const = np.zeros((self.n_max, self.problem.n_const))
-        self.p = np.zeros(self.n_max)
+        self.pen = np.zeros(self.n_max)
         self.f = np.zeros(self.n_max)
         self.f_scaled = np.zeros(self.n_max)
 
         # initialize matrix with distance between each individual of the population
         self.distance_matrix = np.zeros((self.n_max, self.n_max))
 
-        # set counters
+        # initialize counters
         self.c_cross = 0
         self.c_mute = 0
 
@@ -98,7 +96,7 @@ class VIKGA(Algorithm):
         # start optimization process
         self.start()
 
-        # initialize population
+        # initialize the population
         self.initialize()
 
         # print progress
@@ -118,7 +116,7 @@ class VIKGA(Algorithm):
             self.addition()
 
             # compute current population's fitness
-            self.compute_fitness()
+            self.f[:self.pop_size] = compute_fitness(self.obj[:self.pop_size], self.pen[:self.pop_size])
 
             # scale current population's fitness
             if self.multimodal:
@@ -147,6 +145,9 @@ class VIKGA(Algorithm):
                     print("Maximum generation reached!")
                     print("")
 
+        # get final population's results
+        self.results.get_pop(self.x[:self.pop_size], self.obj[:self.pop_size], self.const[:self.pop_size])
+
         # stop the optimization process
         self.stop()
 
@@ -162,141 +163,63 @@ class VIKGA(Algorithm):
         self.x[:self.n_min] = (self.problem.bounds[:, 1]
                                - self.problem.bounds[:, 0]) * x_sample + self.problem.bounds[:, 0]
 
-        # update population size
-        self.pop_size = self.n_min
-
         # compute distance between each individual of the initial population
-        self.distance_matrix[:self.pop_size, :self.pop_size] = np.linalg.norm(self.x[:self.pop_size, np.newaxis]
-                                                                              - self.x[:self.pop_size], axis=2)
+        self.distance_matrix[:self.n_min, :self.n_min] = np.linalg.norm(self.x[:self.n_min, np.newaxis]
+                                                                        - self.x[:self.n_min], axis=2)
 
         # evaluate initial population's objective and constraints
-        self.obj[:self.pop_size], self.const[:self.pop_size] = self.evaluate(self.x[:self.pop_size])
-
-        # get initial population's results
-        self.results.get_pop(self.x[:self.pop_size], self.obj[:self.pop_size], self.const[:self.pop_size])
+        self.obj[:self.n_min], self.const[:self.n_min] = self.evaluate(self.x[:self.n_min])
 
         # compute initial population's penalty
         if self.problem.n_const > 0:
-            self.p[:self.pop_size] = self.compute_penalty(self.const[:self.pop_size])
+            self.pen[:self.n_min] = compute_penalty(self.const[:self.n_min], self.problem)
 
         # compute initial population's fitness
-        self.compute_fitness()
+        self.f[:self.n_min] = compute_fitness(self.obj[:self.n_min], self.pen[:self.n_min])
 
-        # scale initial population's fitness
+        # update population size
+        self.pop_size = self.n_min
+        
+        # scale initial population's fitness to optima
         if self.multimodal:
             self.scale_fitness()
 
         # get initial generation's results
         self.results.get_gen(self)
 
-    def scale_fitness(self, eps=1e-10):
+    def scale_fitness(self):
         """
-        Scale the fitness of the current population.
-
-        Parameters
-        ----------
-        eps : float, optional
-            small value to prevent zero division, by default 1e-10
+        Scale the fitness to local optima
         """
 
-        # identify optima in the current population.
-        self.get_optima()
+        # identify optima
+        self.id_optima = get_optima(self.x[:self.pop_size], self.f[:self.pop_size],
+                                    self.distance_matrix[:self.pop_size, :self.pop_size], self.k)
 
         # if optima are identified
         if len(self.id_optima) > 0:
-
-            # initialize scaled fitness to optima
+            # set array containing the scaled fitness to each optima
             f_optima = np.zeros((self.pop_size, len(self.id_optima)))
 
             # scale fitness to each optima
-            f_max = self.f[self.id_optima]
-            f_optima = self.f[:self.pop_size, np.newaxis] / f_max
+            f_optima = self.f[:self.pop_size, np.newaxis] / self.f[self.id_optima]
 
             # limit values to [0, 1]
             f_optima[f_optima > 1.0] = 1.0
 
-            # adjust that the median value is 0.5
+            # adjust so that the median value of the scaled fitness is 0.5
             m = np.median(f_optima, axis=0)
-            m[m >= 1.0] = 1 - eps
+            m[m >= 1.0] = 1 - 1e-10
             p = np.log(0.5) / np.log(m)
             f_optima = np.power(f_optima, p)
 
             # proximity-weighted scaling process of the whole fitness
-            prox = 1 / (self.distance_matrix[:self.pop_size, self.id_optima] + eps)
+            prox = 1 / (self.distance_matrix[:self.pop_size, self.id_optima] + 1e-10)
             self.f_scaled[:self.pop_size] = np.sum(f_optima * prox, axis=1) / np.sum(prox, axis=1)
 
         else:
+            # otherwise the scaled fitness is just the normal fitness
             self.f_scaled[:self.pop_size] = self.f[:self.pop_size]
-
-    def get_optima(self):
-        """
-        Identify optima in the current population.
-        """
-
-        # switch on method
-        if self.optima_method == "closest":
-
-            # get the k closest neighbors
-            id_neighbors = np.argsort(self.distance_matrix[:self.pop_size, :self.pop_size], axis=1)[:, 1:self.k + 1]
-
-            # get where fitness is better than all its neighbors
-            mask = np.all(self.f[:self.pop_size, np.newaxis] > self.f[id_neighbors], axis=1)
-
-            # get optima index
-            self.id_optima = np.where(mask)[0]
-
-        if self.optima_method == "kdtree":
-
-            # initialize tree
-            tree = KDTree(self.x[:self.pop_size], metric="euclidean")
-
-            # initialize list of optima's index
-            optima = []
-
-            # loop on individuals
-            for i in range(self.pop_size):
-
-                # get neighbors index excluding current individual
-                dist, id = tree.query(self.x[i].reshape(1, -1), k=self.k + 1)
-                id = id[0][1:]
-
-                # if fitness better than all neighbors then it is an optimum
-                if all(self.f[i] > self.f[id]):
-                    optima.append(i)
-
-            # get optima index
-            self.id_optima = np.array(optima)
-
-        if self.optima_method == "dbscan":
-
-            # initialize list of optima's index
-            optima = []
-
-            # apply DBSCAN
-            dbscan = DBSCAN(eps=0.5, min_samples=5)
-            dbscan.fit(self.x[:self.pop_size])
-            labels = dbscan.labels_
-
-            # get unique cluster labels
-            unique_labels = np.unique(labels)
-
-            if len(unique_labels) > 1:
-                for lab in unique_labels[1:]:
-                    optimum = np.arange(self.pop_size)[labels == lab][np.argmax(self.f[:self.pop_size][labels == lab])]
-                    optima.append(optimum)
-
-            # get optima index
-            self.id_optima = np.array(optima)
-
-    def plot_fitness(self, f_optima):
-
-        if self.problem.n_var == 1:
-            fig, ax = self.problem.plot_f(500)
-            for i in range(len(f_optima[0])):
-                ax.plot(self.x[:self.pop_size], f_optima[:self.pop_size, i], '.')
-
-            fig, ax = self.problem.plot_f(500)
-            ax.plot(self.x[:self.pop_size], self.f_scaled[:self.pop_size], '.', label="scaled fitness")
 
     def crossover(self):
         """
@@ -304,6 +227,7 @@ class VIKGA(Algorithm):
         From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
         """
 
+        # if multimodal problem is considered then use the scaled fitness
         if self.multimodal:
             fitness = self.f_scaled[:self.pop_size]
         else:
@@ -315,7 +239,6 @@ class VIKGA(Algorithm):
         # compute fitness-proportionate probability
         p_fit = fitness / np.sum(fitness)
 
-        parents = []
         # loop on crossovers
         for i in range(int(self.n_cross / 2)):
 
@@ -336,10 +259,7 @@ class VIKGA(Algorithm):
             id_p2 = id_crowd[np.where(fitness[id_crowd] == fitness[id_crowd].max())[0][0]]
 
             # compute offsprings' design variables
-            self.x_cross[[2 * i, 2 * i + 1]] = self.sbx(self.x[[id_p1, id_p2]], self.eta)
-
-            parents.append(id_p1)
-            parents.append(id_p2)
+            self.x_cross[[2 * i, 2 * i + 1]] = sbx(self.x[id_p1], self.x[id_p2], self.problem.bounds, self.eta)
 
     def mutation(self):
         """
@@ -361,6 +281,7 @@ class VIKGA(Algorithm):
         From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
         """
 
+        # if multimodal problem is considered then use the scaled fitness
         if self.multimodal:
             fitness = self.f_scaled[:self.pop_size]
         else:
@@ -418,10 +339,6 @@ class VIKGA(Algorithm):
             # evaluate objective and constraints of the new population
             self.obj[size:self.pop_size], self.const[size:self.pop_size] = self.evaluate(self.x[size:self.pop_size])
 
-            # get new population's results
-            self.results.get_pop(self.x[size:self.pop_size],
-                                 self.obj[size:self.pop_size], self.const[size:self.pop_size])
-
             # compute penalty of the new population
             if self.problem.n_const > 0:
-                self.p[size:self.pop_size] = self.compute_penalty(self.const[size:self.pop_size])
+                self.pen[size:self.pop_size] = compute_penalty(self.const[size:self.pop_size], self.problem)

@@ -20,12 +20,12 @@ class GL(Problem):
         self.var = ['x', 'y']
         self.bounds = np.array([[-1, 0.75], [-1, 1]])
 
-        # set constraints
+        # add constraints
         self.add_constraint('inf', 1.5)
 
     def func(self, x: np.ndarray):
         """
-        Objective and constraint function.
+        Objectives and constraints functions.
 
         Parameters
         ----------
@@ -34,25 +34,18 @@ class GL(Problem):
 
         Returns
         -------
-        obj : np.ndarray
-            objective values.
-        const : np.ndarray
-            constraints values.
+        np.ndarray
+            Objectives and constraints values
         """
 
         a = 4 * x[0]**2 - 4 * x[1]**2
         b = 4 * x[1]**4 - 2.1 * x[0]**4
         c = (x[0] ** 6) / 3
         d = x[0] * x[1]
-
         f = a + b + c + d
 
         a = 2 * np.sin(2 * np.pi * x[1]) ** 2
         b = np.sin(4 * np.pi * x[0])
-
         g = a - b
 
-        obj = np.array(-f)
-        const = np.array(g)
-
-        return obj, const
+        return np.array([-f, g])

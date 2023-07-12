@@ -8,7 +8,7 @@ def main():
     pb = F4()
 
     # define the algorithm
-    algo = VIKGA(pb, n_min=100, n_max=1000, n_gen=500)
+    algo = VIKGA(pb, n_min=10, n_max=1000, n_gen=500)
 
     # modify some parameter
     algo.n_cross = 4
@@ -16,7 +16,6 @@ def main():
     algo.n_proc = 4
     algo.k = 4
     algo.multimodal = True
-    algo.optima_method = "closest"
     algo.display = True
     algo.save = False
 

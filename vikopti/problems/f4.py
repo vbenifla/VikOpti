@@ -23,7 +23,7 @@ class F4(Problem):
 
     def func(self, x: np.ndarray):
         """
-        Objective and constraint function.
+        Objectives and constraints functions.
 
         Parameters
         ----------
@@ -32,10 +32,8 @@ class F4(Problem):
 
         Returns
         -------
-        obj : np.ndarray
-            objective values.
-        const : np.ndarray
-            constraints values.
+        np.ndarray
+            Objectives and constraints values
         """
 
         A = [-20, 40, 0]
@@ -47,7 +45,4 @@ class F4(Problem):
         for i in range(len(A)):
             f += H[i] / (1 + W[i] * ((x[0] - A[i]) ** 2 + (x[1] - B[i]) ** 2))
 
-        obj = np.array(f)
-        const = None
-
-        return obj, const
+        return np.array([f])

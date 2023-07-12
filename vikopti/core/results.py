@@ -38,7 +38,7 @@ class Results:
         self.df_pop = pd.DataFrame(columns=self.problem.var
                                    + ["obj"] + ["const" + str(i) for i in range(self.problem.n_const)])
 
-    def make_directory(self, base_dir=os.getcwd()):
+    def make_directory(self):
         """
         Make the directory where results are saved.
 
@@ -49,6 +49,7 @@ class Results:
         """
 
         # set results directory
+        base_dir = os.getcwd()
         dir_name = time.strftime("%Y_%m_%d_%Hh%M")
         self.dir = os.path.join(base_dir, "results", dir_name)
 
@@ -73,8 +74,9 @@ class Results:
         i = np.argmax(algo.f[:algo.pop_size])
 
         # get optimum's results
-        data += [i] + [algo.x[i, j] for j in range(self.problem.n_var)]
-        + [algo.obj[i, 0]] + [algo.const[i, j] for j in range(self.problem.n_const)]
+        data += [i]
+        data += [algo.x[i, j] for j in range(self.problem.n_var)]
+        data += [algo.obj[i, 0]] + [algo.const[i, j] for j in range(self.problem.n_const)]
 
         # set dataframe
         self.df_gen.loc[len(self.df_gen.index)] = data
