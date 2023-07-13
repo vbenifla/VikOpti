@@ -310,10 +310,10 @@ class VIKGA(Algorithm):
                 id_min = np.argmin(dist[:size])
 
                 # compute distance threshold
-                r_min = (1 - fitness[id_min] ** (2 * 0.95)) * 0.1
+                r_min = (1 - fitness[id_min] ** (2 * 0.95)) * 0.2 + 0.01
 
                 # if "far" enough from closest individual add to the current population
-                if r_min <= dist[id_min] / self.sf:
+                if r_min >= dist[id_min] / self.sf:
 
                     # update distance matrix
                     self.distance_matrix[:self.pop_size, self.pop_size] = dist

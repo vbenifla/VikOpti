@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
 from sklearn.cluster import DBSCAN
 from vikopti.core.problem import Problem
@@ -137,7 +138,7 @@ def sbx(xp1, xp2, bounds, eta=2.0):
     y1 = np.clip(y1, bounds[:, 0], bounds[:, 1])
     y2 = np.clip(y2, bounds[:, 0], bounds[:, 1])
 
-    # This for updating the distribution index buuuuut not sure yet
+    # This for updating the distribution index but not sure yet
     # # Update eta based on child performance
     # child_better = False  # Flag to check if child is better than parents
     # child_worse = False  # Flag to check if child is worse than parents
@@ -178,3 +179,20 @@ def writte_df(df, directory):
     # Write df to txt
     df.to_string(os.path.join(directory, df.name + '.txt'),
                  col_space=col_w, header=True, index=True, formatters=fmts, justify="left")
+
+
+def plot_addition(problem, x_off, x_nei, radius):
+
+    # create figure
+    fig, ax = problem.plot_contour()
+
+    # plot offspring and closest neighbor
+    plt.plot(x_off[0], x_off[1], 'bo')
+    plt.plot(x_nei[0], x_nei[1], 'ko')
+
+    # Plot the circle
+    circle = plt.Circle((x_nei[0], x_nei[1]), radius, color='red', fill=False)
+    plt.gca().add_patch(circle)
+
+    # make axis equal not to be fooled
+    plt.axis('equal')

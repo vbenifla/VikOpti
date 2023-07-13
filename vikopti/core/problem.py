@@ -63,7 +63,7 @@ class Problem:
         # add constraint to the holder
         self.constraint.append(Constraint(type, limit))
 
-    def plot(self, figsize=(6, 6), grid_size=100):
+    def plot(self, figsize=(6, 6), grid_size=500, display=False):
 
         # if the problem is plotable
         if self.plotable:
@@ -110,9 +110,57 @@ class Problem:
                 ax.set_ylabel(self.var[1])
                 ax.set_zlabel('f')
 
-            # difficult to plot otherwise
-            else:
-                pass
+            # show the plot
+            if display:
+                plt.show()
 
-            plt.show()
             return fig, ax
+
+    def plot_contour(self, figsize=(6, 6), grid_size=500, n_contour=100, display=True):
+        """
+        Plot the problem's objective function as a contour plot.
+
+        Parameters
+        ----------
+        grid_size : int, optional
+            2 dimensional grid size, by default 100.
+        n_contour : int, optional
+            number of contour levels, by default 10.
+        fig_size : tuple, optional
+            figure size, by default (6,6)
+        """
+
+        # if the problem is plotable
+        if self.plotable:
+
+            # if the problem is 2D
+            if self.n_var == 2:
+
+                # create figure
+                fig, ax = plt.subplots(figsize=figsize)
+
+                # generate grid
+                x = np.linspace(self.bounds[0][0], self.bounds[0][1], grid_size)
+                y = np.linspace(self.bounds[1][0], self.bounds[1][1], grid_size)
+                xgrid, ygrid = np.meshgrid(x, y)
+
+                # plot function
+                cp = ax.contourf(xgrid, ygrid, self.func([xgrid, ygrid])[0], levels=n_contour,  cmap='YlGnBu_r')
+
+                # set figure's limit to pb's bounds
+                ax.set_xlim(self.bounds[0][0], self.bounds[0][1])
+                ax.set_ylim(self.bounds[1][0], self.bounds[1][1])
+
+                # set figures's labels
+                ax.set_xlabel(self.var[0])
+                ax.set_ylabel(self.var[1])
+
+                # set colormap
+                cbar = fig.colorbar(cp)
+                cbar.ax.set_ylabel('f', rotation=0)
+
+                # show the plot
+                if display:
+                    plt.show()
+
+                return fig, ax

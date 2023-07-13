@@ -1,14 +1,11 @@
-from vikopti.problems.thc import THC
 from vikopti.problems.f4 import F4
-from vikopti.problems.f2 import F2
 from vikopti.algorithms.vikga import VIKGA
 
 
 def main():
 
     # define the problem
-    for pb in [F4(), THC(), F2()]:
-        pb.plot()
+    pb = F4()
 
     # define the algorithm
     algo = VIKGA(pb, n_min=10, n_max=1000, n_gen=500)
