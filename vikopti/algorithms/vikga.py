@@ -179,7 +179,7 @@ class VIKGA(Algorithm):
 
         # update population size
         self.pop_size = self.n_min
-        
+
         # scale initial population's fitness to optima
         if self.multimodal:
             self.scale_fitness()

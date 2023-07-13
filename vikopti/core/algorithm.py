@@ -1,7 +1,6 @@
 import time
 import numpy as np
 import multiprocessing as mp
-import matplotlib.pyplot as plt
 from vikopti.core.problem import Problem
 from vikopti.core.results import Results
 
@@ -83,7 +82,6 @@ class Algorithm:
         if self.display:
             self.results.print()
             self.results.plot()
-            plt.show()
 
         # save algorithm's results
         if self.save:

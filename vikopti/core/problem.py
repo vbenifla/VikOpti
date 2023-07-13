@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 from vikopti.core.constraint import Constraint
 
 
@@ -18,7 +20,7 @@ class Problem:
             problem's number of objectives.
         n_const : int
             problem's number of constraints.
-        plot : bool, optional
+        plotable : bool, optional
             option to tell if problem can be plotted or not, by default False.
         """
 
@@ -28,7 +30,7 @@ class Problem:
         self.n_const = n_const
 
         # set options
-        self.plot_flag = plotable
+        self.plotable = plotable
 
         # set constraints holder
         self.constraint = []
@@ -60,3 +62,57 @@ class Problem:
 
         # add constraint to the holder
         self.constraint.append(Constraint(type, limit))
+
+    def plot(self, figsize=(6, 6), grid_size=100):
+
+        # if the problem is plotable
+        if self.plotable:
+
+            # if the problem is 1D
+            if self.n_var == 1:
+
+                # create figure
+                fig, ax = plt.subplots(figsize=figsize)
+
+                # generate grid
+                x = np.linspace(self.bounds[0][0], self.bounds[0][1], grid_size)
+
+                # plot function
+                ax.plot(x, self.func([x])[0], label="fitness")
+
+                # set figure's limit to pb's bounds
+                ax.set_xlim(self.bounds[0][0], self.bounds[0][1])
+
+                # set figures's labels
+                ax.set_xlabel(self.var[0])
+                ax.set_ylabel('f')
+
+            # if the problem is 2D
+            elif self.n_var == 2:
+
+                # create figure
+                fig, ax = plt.subplots(figsize=figsize, subplot_kw={"projection": "3d"})
+
+                # generate grid
+                x = np.linspace(self.bounds[0][0], self.bounds[0][1], grid_size)
+                y = np.linspace(self.bounds[1][0], self.bounds[1][1], grid_size)
+                xgrid, ygrid = np.meshgrid(x, y)
+
+                # plot function
+                ax.plot_surface(xgrid, ygrid, self.func([xgrid, ygrid])[0], cmap='YlGnBu_r')
+
+                # set figure's limit to pb's bounds
+                ax.set_xlim(self.bounds[0][0], self.bounds[0][1])
+                ax.set_ylim(self.bounds[1][0], self.bounds[1][1])
+
+                # set figures's labels
+                ax.set_xlabel(self.var[0])
+                ax.set_ylabel(self.var[1])
+                ax.set_zlabel('f')
+
+            # difficult to plot otherwise
+            else:
+                pass
+
+            plt.show()
+            return fig, ax

@@ -2,10 +2,9 @@ import numpy as np
 from vikopti.core.problem import Problem
 
 
-class F4(Problem):
+class THC(Problem):
     """
-    Class representing the F4 function.
-    From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
+    Class representing the Three-Hump-Camel function optimization problem.
     """
 
     def __init__(self):
@@ -15,11 +14,11 @@ class F4(Problem):
         super().__init__(2, 1, 0, True)
 
         # set problem's name
-        self.name = "F4 function"
+        self.name = "Three-Hump-Camel function"
 
         # set variables and boundaries
         self.var = ['x', 'y']
-        self.bounds = np.array([[-40, 40], [-40, 40]])
+        self.bounds = np.array([[-5, 5], [-5, 5]])
 
     def func(self, x: np.ndarray):
         """
@@ -36,12 +35,10 @@ class F4(Problem):
             Objectives and constraints values
         """
 
-        A = [-20, 40, 0]
-        B = [-20, -30, 30]
-        H = [0.7, 1, 1.5]
-        W = [0.02, 0.08, 0.01]
-        f = 0
-        for i in range(len(A)):
-            f += H[i] / (1 + W[i] * ((x[0] - A[i]) ** 2 + (x[1] - B[i]) ** 2))
+        a = 2 * x[0]**2 + x[1]**2
+        b = -1.05 * x[0]**4
+        c = (x[0]**6) / 6
+        d = x[0] * x[1]
+        f = a + b + c + d
 
-        return np.array([f])
+        return np.array([-f])

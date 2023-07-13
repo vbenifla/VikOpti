@@ -1,14 +1,17 @@
+from vikopti.problems.thc import THC
 from vikopti.problems.f4 import F4
+from vikopti.problems.f2 import F2
 from vikopti.algorithms.vikga import VIKGA
 
 
 def main():
 
     # define the problem
-    pb = F4()
+    for pb in [F2(), THC(), F4()]:
+        pb.plot()
 
     # define the algorithm
-    algo = VIKGA(pb, n_min=10, n_max=1000, n_gen=500)
+    algo = VIKGA(pb, n_min=10, n_max=100, n_gen=500)
 
     # modify some parameter
     algo.n_cross = 4

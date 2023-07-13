@@ -11,7 +11,7 @@ class GL(Problem):
         """
         Constructs the problem object and set the different attributes.
         """
-        super().__init__(2, 1, 1)
+        super().__init__(2, 1, 1, True)
 
         # set problem's name
         self.name = "Gomez and Levy function"

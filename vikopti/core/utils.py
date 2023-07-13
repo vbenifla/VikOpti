@@ -135,7 +135,7 @@ def sbx(xp1, xp2, bounds, eta=2.0):
     # make sure it is in bound
     y1 = np.clip(y1, bounds[:, 0], bounds[:, 1])
     y2 = np.clip(y2, bounds[:, 0], bounds[:, 1])
-    
+
     # This for updating the distribution index buuuuut not sure yet
     # # Update eta based on child performance
     # child_better = False  # Flag to check if child is better than parents

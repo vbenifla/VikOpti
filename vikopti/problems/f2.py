@@ -2,9 +2,9 @@ import numpy as np
 from vikopti.core.problem import Problem
 
 
-class F4(Problem):
+class F2(Problem):
     """
-    Class representing the F4 function.
+    Class representing the F2 function.
     From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
     """
 
@@ -12,14 +12,14 @@ class F4(Problem):
         """
         Constructs the problem object and set the different attributes.
         """
-        super().__init__(2, 1, 0, True)
+        super().__init__(1, 1, 0, True)
 
         # set problem's name
-        self.name = "F4 function"
+        self.name = "F2 function"
 
         # set variables and boundaries
-        self.var = ['x', 'y']
-        self.bounds = np.array([[-40, 40], [-40, 40]])
+        self.var = ['x']
+        self.bounds = np.array([[0, 0.9]])
 
     def func(self, x: np.ndarray):
         """
@@ -36,12 +36,8 @@ class F4(Problem):
             Objectives and constraints values
         """
 
-        A = [-20, 40, 0]
-        B = [-20, -30, 30]
-        H = [0.7, 1, 1.5]
-        W = [0.02, 0.08, 0.01]
-        f = 0
-        for i in range(len(A)):
-            f += H[i] / (1 + W[i] * ((x[0] - A[i]) ** 2 + (x[1] - B[i]) ** 2))
+        a = np.sin(5.1 * np.pi * x[0] + 0.5) ** 6
+        b = - (4 / 0.64) * np.log(2) * (x[0] - 0.0667) ** 2
+        f = a * np.exp(b)
 
         return np.array([f])
