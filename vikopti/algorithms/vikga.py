@@ -68,10 +68,6 @@ class VIKGA(Algorithm):
         # initialize matrix with distance between each individual of the population
         self.distance_matrix = np.zeros((self.n_max, self.n_max))
 
-        # initialize counters
-        self.c_cross = 0
-        self.c_mute = 0
-
         # set scaling factor
         self.sf = np.linalg.norm(self.problem.bounds[:, 1] - self.problem.bounds[:, 0])
 
@@ -132,7 +128,6 @@ class VIKGA(Algorithm):
                     print("Maximum population size reached!")
                     print("")
 
-                # break
                 break
 
             # print progress
@@ -218,6 +213,7 @@ class VIKGA(Algorithm):
             self.f_scaled[:self.pop_size] = np.sum(f_optima * prox, axis=1) / np.sum(prox, axis=1)
 
         else:
+
             # otherwise the scaled fitness is just the normal fitness
             self.f_scaled[:self.pop_size] = self.f[:self.pop_size]
 
@@ -236,10 +232,12 @@ class VIKGA(Algorithm):
         # set array containing offsprings' design variables
         self.x_cross = np.zeros((self.n_cross, self.problem.n_var))
 
+        # TODO: check why sometimes I have som nan in proba
         # compute fitness-proportionate probability
         p_fit = fitness / np.sum(fitness)
 
         # loop on crossovers
+        # TODO: check if all parents could be selected at once preventing to reselect parents
         for i in range(int(self.n_cross / 2)):
 
             # select first parent using fitness-proportionate selection
@@ -266,6 +264,7 @@ class VIKGA(Algorithm):
         Perform the mutation operation.
         """
 
+        # TODO: implement more efficient mutation
         # set array containing offsprings' design variables
         self.x_mute = np.zeros((self.n_mute, self.problem.n_var))
 
@@ -310,10 +309,11 @@ class VIKGA(Algorithm):
                 id_min = np.argmin(dist[:size])
 
                 # compute distance threshold
-                r_min = (1 - fitness[id_min] ** (2 * 0.95)) * 0.2 + 0.01
+                # TODO: implement an adaptive threshold
+                r_min = (1 - fitness[id_min] ** (2 * 0.95)) * 0.2 + 0.001
 
                 # if "far" enough from closest individual add to the current population
-                if r_min >= dist[id_min] / self.sf:
+                if r_min <= dist[id_min] / self.sf:
 
                     # update distance matrix
                     self.distance_matrix[:self.pop_size, self.pop_size] = dist

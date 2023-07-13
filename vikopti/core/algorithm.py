@@ -45,9 +45,13 @@ class Algorithm:
         self.n_proc = self.n_proc if self.n_proc < mp.cpu_count() - 1 else 2
         self.pool = mp.Pool(self.n_proc)
 
-        # initialize results and evaluation counter
-        self.results = Results(self)
-        self.f_eval = 0
+        # initialize results
+        self.results = Results(self.problem, self.save)
+
+        # initialize some counters
+        self.c_eval = 0
+        self.c_cross = 0
+        self.c_mute = 0
 
         # print algorithm's and problem's summary
         if self.display:
@@ -76,7 +80,7 @@ class Algorithm:
 
         # set results
         self.results.run_time = round(self.et - self.st)
-        self.results.f_eval = self.f_eval
+        self.results.c_eval = self.c_eval
 
         # save algorithm's results
         if self.save:
@@ -111,7 +115,7 @@ class Algorithm:
         const = res[:, self.problem.n_obj:self.problem.n_obj + self.problem.n_const]
 
         # update counter
-        self.f_eval += len(x)
+        self.c_eval += len(x)
 
         return obj, const
 

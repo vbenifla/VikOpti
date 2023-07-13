@@ -63,7 +63,7 @@ class Problem:
         # add constraint to the holder
         self.constraint.append(Constraint(type, limit))
 
-    def plot(self, figsize=(6, 6), grid_size=500, display=False):
+    def plot(self, figsize=(6, 6), grid_size=500):
 
         # if the problem is plotable
         if self.plotable:
@@ -110,13 +110,9 @@ class Problem:
                 ax.set_ylabel(self.var[1])
                 ax.set_zlabel('f')
 
-            # show the plot
-            if display:
-                plt.show()
-
             return fig, ax
 
-    def plot_contour(self, figsize=(6, 6), grid_size=500, n_contour=100, display=True):
+    def plot_contour(self, figsize=(6, 6), grid_size=500, n_contour=50):
         """
         Plot the problem's objective function as a contour plot.
 
@@ -158,9 +154,5 @@ class Problem:
                 # set colormap
                 cbar = fig.colorbar(cp)
                 cbar.ax.set_ylabel('f', rotation=0)
-
-                # show the plot
-                if display:
-                    plt.show()
 
                 return fig, ax

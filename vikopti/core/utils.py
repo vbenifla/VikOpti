@@ -7,6 +7,21 @@ from vikopti.core.problem import Problem
 
 
 def compute_penalty(const: np.ndarray, problem: Problem):
+    """
+    Compute the penalty values from constraints values.
+
+    Parameters
+    ----------
+    const : np.ndarray
+        constraints values.
+    problem : Problem
+        problem considered.
+
+    Returns
+    -------
+    penalty : np.ndarray
+        penalty values.
+    """
 
     # set array containing penalty
     penalty = np.zeros(len(const))
@@ -28,6 +43,21 @@ def compute_penalty(const: np.ndarray, problem: Problem):
 
 
 def compute_fitness(obj: np.ndarray, pen: np.ndarray):
+    """
+    Compute the fitness function from objectives and penalty values.
+
+    Parameters
+    ----------
+    obj : np.ndarray
+        objectives values.
+    pen : np.ndarray
+        penalty values.
+
+    Returns
+    -------
+    fitness : np.ndarray
+        fitness function.
+    """
 
     # set array containing penalty
     fitness = np.zeros(len(obj))
@@ -52,6 +82,26 @@ def compute_fitness(obj: np.ndarray, pen: np.ndarray):
 
 
 def get_optima(x: np.ndarray, f: np.ndarray, distance: np.ndarray, k=5):
+    """
+    Identify optima in the population from comparing closest neighbors.
+    From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        population's variables.
+    f : np.ndarray
+        population's fitness values.
+    distance : np.ndarray
+        population's distance matrix.
+    k : int, optional
+        number of neighbors to use for comparison, by default 5.
+
+    Returns
+    -------
+    id_optima : np.ndarray
+        array containing the index of the optima.
+    """
 
     # get the index of the k closest neighbors for each individual
     id_neighbors = np.argsort(distance, axis=1)[:, 1:k + 1]
@@ -121,6 +171,26 @@ def get_optima_dbscan(x: np.ndarray, f: np.ndarray, eps=0.5, min_samples=5):
 
 
 def sbx(xp1, xp2, bounds, eta=2.0):
+    """
+    Perform the simulated binary crossover.
+    From K. Deb, and all. 2007. Self-adaptive simulated binary crossover for real-parameter optimization.
+
+    Parameters
+    ----------
+    xp1 : np.ndarray
+        first parent's design variables.
+    xp2 : np.ndarray
+        second parent's design variables.
+    bounds : np.ndarray
+        design space boundaries.
+    eta : float, optional
+        distribution index, by default 2.0.
+
+    Returns
+    -------
+    xo : np.ndarray
+        offsprings' design variables.
+    """
 
     # Generate random numbers for each variables
     rand = np.random.random(size=len(xp1))
@@ -131,12 +201,15 @@ def sbx(xp1, xp2, bounds, eta=2.0):
                     (1 / (2 * (1 - rand))) ** (1 / (eta + 1)))
 
     # Produce offsprings
-    y1 = 0.5 * ((1 + beta) * xp1 + (1 - beta) * xp2)
-    y2 = 0.5 * ((1 - beta) * xp1 + (1 + beta) * xp2)
+    x1 = 0.5 * ((1 + beta) * xp1 + (1 - beta) * xp2)
+    x2 = 0.5 * ((1 - beta) * xp1 + (1 + beta) * xp2)
 
     # make sure it is in bound
-    y1 = np.clip(y1, bounds[:, 0], bounds[:, 1])
-    y2 = np.clip(y2, bounds[:, 0], bounds[:, 1])
+    x1 = np.clip(x1, bounds[:, 0], bounds[:, 1])
+    x2 = np.clip(x2, bounds[:, 0], bounds[:, 1])
+
+    # make an array
+    xo = np.array([x1, x2])
 
     # This for updating the distribution index but not sure yet
     # # Update eta based on child performance
@@ -162,10 +235,20 @@ def sbx(xp1, xp2, bounds, eta=2.0):
     # elif child_worse:
     #     eta *= 1.05  # Increase eta by 5%
 
-    return np.array([y1, y2])
+    return xo
 
 
-def writte_df(df, directory):
+def write_df(df, directory):
+    """
+    Write a panda dataframe in a nice way
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe considered.
+    directory : str
+        directory where to write the dataframe
+    """
 
     # Get column width for better visualization
     col_w = []
@@ -181,18 +264,67 @@ def writte_df(df, directory):
                  col_space=col_w, header=True, index=True, formatters=fmts, justify="left")
 
 
-def plot_addition(problem, x_off, x_nei, radius):
+def plot_addition(problem, x_off, x_nei, radius, figsize=(6, 6), grid_size=500, n_contour=50):
+    """
+    Plot the addition operation.
 
-    # create figure
-    fig, ax = problem.plot_contour()
+    Parameters
+    ----------
+    problem : Problem
+        problem considered.
+    x_off : np.ndarray
+        offspring's variables.
+    x_nei : np.ndarray
+        closest neighbor's  variables.
+    radius : float
+        distance threshold.
+    grid_size : int, optional
+        2 dimensional grid size, by default 100.
+    n_contour : int, optional
+        number of contour levels, by default 10.
+    fig_size : tuple, optional
+        figure size, by default (6,6)
+    """
 
-    # plot offspring and closest neighbor
-    plt.plot(x_off[0], x_off[1], 'bo')
-    plt.plot(x_nei[0], x_nei[1], 'ko')
+    # if the problem is 2D
+    if problem.n_var == 2:
 
-    # Plot the circle
-    circle = plt.Circle((x_nei[0], x_nei[1]), radius, color='red', fill=False)
-    plt.gca().add_patch(circle)
+        # create figure
+        fig, ax = problem.plot_contour(figsize, grid_size, n_contour)
 
-    # make axis equal not to be fooled
-    plt.axis('equal')
+        # plot offspring and closest neighbor
+        plt.plot(x_off[0], x_off[1], 'bo')
+        plt.plot(x_nei[0], x_nei[1], 'ko')
+
+        # Plot the circle
+        circle = plt.Circle((x_nei[0], x_nei[1]), radius, color='red', fill=False)
+        plt.gca().add_patch(circle)
+
+        # make axis equal not to be fooled
+        plt.axis('equal')
+
+
+def plot_population(algo, figsize=(6, 6), grid_size=500, n_contour=50):
+    """
+    Plot the population.
+
+    Parameters
+    ----------
+    algo : Algorithm
+        algorithm considered
+    grid_size : int, optional
+        2 dimensional grid size, by default 100.
+    n_contour : int, optional
+        number of contour levels, by default 10.
+    fig_size : tuple, optional
+        figure size, by default (6,6)
+    """
+
+    # if the problem is 2D
+    if algo.problem.n_var == 2:
+
+        # create figure
+        fig, ax = algo.problem.plot_contour(figsize, grid_size, n_contour)
+
+        # plot population
+        plt.scatter(algo.x[:algo.pop_size, 0], algo.x[:algo.pop_size, 1], color='black')
