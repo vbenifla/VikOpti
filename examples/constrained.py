@@ -11,12 +11,12 @@ def main():
     algo = VIKGA(pb, n_min=10, n_max=1000, n_gen=500)
 
     # modify some parameter
-    algo.n_cross = 4
-    algo.n_mute = 2
-    algo.n_proc = 4
+    algo.n_cross = 6
+    algo.n_mute = 4
+    algo.n_proc = 1
     algo.multimodal = True
     algo.display = True
-    algo.save = False
+    algo.save = True
 
     # run the algorithm
     algo.run()

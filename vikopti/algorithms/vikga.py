@@ -146,7 +146,7 @@ class VIKGA(Algorithm):
                     print("")
 
         # get final population's results
-        self.results.get_pop(self.x[:self.pop_size], self.obj[:self.pop_size], self.const[:self.pop_size])
+        self.results.get_pop(self)
 
         # stop the optimization process
         self.stop()

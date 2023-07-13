@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from sklearn.neighbors import KDTree
 from sklearn.cluster import DBSCAN
@@ -161,3 +162,19 @@ def sbx(xp1, xp2, bounds, eta=2.0):
     #     eta *= 1.05  # Increase eta by 5%
 
     return np.array([y1, y2])
+
+
+def writte_df(df, directory):
+
+    # Get column width for better visualization
+    col_w = []
+    for header in list(df.columns):
+        max_w = max(len(header), len(max(df[header].to_numpy(str))))
+        col_w.append(max_w + 2)
+
+    # Generate list or formatters
+    fmts = [('{:<' + str(w) + '}').format for w in col_w]
+
+    # Write df to txt
+    df.to_string(os.path.join(directory, df.name + '.txt'),
+                 col_space=col_w, header=True, index=True, formatters=fmts, justify="left")

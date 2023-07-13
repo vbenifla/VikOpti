@@ -44,7 +44,7 @@ class Problem:
         print('##### ' + self.name + ' #####')
         print('#' * (6 + len(self.name) + 6))
         print(f'N° of variables:   {self.n_var}')
-        print(f'N° of objectives:   {self.n_obj}')
+        print(f'N° of objectives:  {self.n_obj}')
         print(f'N° of constraints: {self.n_const}')
         print("")
 

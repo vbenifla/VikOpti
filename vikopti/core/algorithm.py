@@ -46,7 +46,7 @@ class Algorithm:
         self.pool = mp.Pool(self.n_proc)
 
         # initialize results and evaluation counter
-        self.results = Results(self.problem, self.save)
+        self.results = Results(self)
         self.f_eval = 0
 
         # print algorithm's and problem's summary
@@ -78,14 +78,13 @@ class Algorithm:
         self.results.run_time = round(self.et - self.st)
         self.results.f_eval = self.f_eval
 
-        # print and plot algorithm's results
-        if self.display:
-            self.results.print()
-            self.results.plot()
-
         # save algorithm's results
         if self.save:
             self.results.save()
+
+        # print and plot algorithm's results
+        if self.display:
+            self.results.print()
 
     def evaluate(self, x: np.ndarray):
         """
