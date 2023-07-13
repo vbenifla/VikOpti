@@ -32,7 +32,7 @@ class THC(Problem):
         Returns
         -------
         np.ndarray
-            Objectives and constraints values
+            Objectives and constraints values.
         """
 
         a = 2 * x[0]**2 + x[1]**2

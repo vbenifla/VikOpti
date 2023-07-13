@@ -33,7 +33,7 @@ class F4(Problem):
         Returns
         -------
         np.ndarray
-            Objectives and constraints values
+            Objectives and constraints values.
         """
 
         A = [-20, 40, 0]

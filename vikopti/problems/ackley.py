@@ -2,24 +2,23 @@ import numpy as np
 from vikopti.core.problem import Problem
 
 
-class F2(Problem):
+class Ackley(Problem):
     """
-    Class representing the F2 function.
-    From: M. Hall. 2012. A Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization.
+    Class representing the Ackley function optimization problem.
     """
 
     def __init__(self):
         """
         Constructs the problem object and set the different attributes.
         """
-        super().__init__(1, 1, 0, True)
+        super().__init__(2, 1, 0, True)
 
         # set problem's name
-        self.name = "F2 function"
+        self.name = "Ackley function"
 
         # set variables and boundaries
-        self.var = ['x']
-        self.bounds = np.array([[0, 0.9]])
+        self.var = ['x', 'y']
+        self.bounds = np.array([[-5, 5], [-5, 5]])
 
     def func(self, x: np.ndarray):
         """
@@ -36,8 +35,8 @@ class F2(Problem):
             Objectives and constraints values.
         """
 
-        a = np.sin(5.1 * np.pi * x[0] + 0.5) ** 6
-        b = - (4 / 0.64) * np.log(2) * (x[0] - 0.0667) ** 2
-        f = a * np.exp(b)
+        a = np.sqrt((x[0]**2 + x[1]**2) / 2) / 5
+        b = (np.cos(2 * np.pi * x[0]) + np.cos(2 * np.pi * x[1])) / 2
+        f = -20 * np.exp(-a) - np.exp(b) + np.e + 20
 
-        return np.array([f])
+        return np.array([-f])

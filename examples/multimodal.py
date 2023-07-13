@@ -7,11 +7,11 @@ from vikopti.algorithms.vikga import VIKGA
 def main():
 
     # define the problem
-    for pb in [F2(), THC(), F4()]:
+    for pb in [F4(), THC(), F2()]:
         pb.plot()
 
     # define the algorithm
-    algo = VIKGA(pb, n_min=10, n_max=100, n_gen=500)
+    algo = VIKGA(pb, n_min=10, n_max=1000, n_gen=500)
 
     # modify some parameter
     algo.n_cross = 4
@@ -20,7 +20,7 @@ def main():
     algo.k = 4
     algo.multimodal = True
     algo.display = True
-    algo.save = False
+    algo.save = True
 
     # run the algorithm
     algo.run()

@@ -35,7 +35,7 @@ class GL(Problem):
         Returns
         -------
         np.ndarray
-            Objectives and constraints values
+            Objectives and constraints values.
         """
 
         a = 4 * x[0]**2 - 4 * x[1]**2
